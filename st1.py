@@ -11,9 +11,9 @@ class Variable:
     def backward(self):
         f = self.creator
         if f is not None:
-            f.backward(self.grad)
-        else:
-            raise RuntimeError("creator not found")
+            x=f.input
+            x.grad = f.backward(self.grad)
+            x.backward()
 
 class Function:
     def __call__(self,input):
@@ -70,7 +70,5 @@ b=B(a)
 c=C(b)
 
 c.grad = np.array(1.0)
-b.grad = C.backward(c.grad)
-a.grad = B.backward(b.grad)
-x.grad = A.backward(a.grad)
+c.backward()
 print(x.grad)
