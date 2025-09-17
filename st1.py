@@ -63,13 +63,9 @@ def exp(x):
     return Exp()(x)
 
 def f(x):
-    A=square()
-    B=exp()
-    C=square()
-    return C(B(A(x)))
-A=Square()
-B=Exp()
-C=Square()
+    
+    return square(exp(square(x)))
+
 data = np.array(0.5)
 
 x = Variable(data)
