@@ -1,5 +1,4 @@
 import numpy as np
-import unittest
 
 class Variable:
     def __init__(self, data):
@@ -57,8 +56,8 @@ class Exp(Function):
         return np.exp(x)*gy
 
 def numerical_diff(f,x,eps=1e-4):
-    x0 = Variable(x.data - eps)
-    x1 = Variable(x.data + eps)
+    x0 = Variable(as_array(x.data - eps))
+    x1 = Variable(as_array(x.data + eps))
     y0 = f(x0)
     y1 = f(x1)
     return (y1.data - y0.data) / (2*eps)
@@ -77,27 +76,16 @@ def as_array(x):
         return np.array(x)
     return x
 
-data = np.array(0.5)
-
-x = Variable(data)
-y=f(x)
-# y.grad = np.array(1.0)
-y.backward()
-
-print(x.grad)
-
-class SquareTest(unittest.TestCase):
-    def test_forward(self):
-        x = Variable(np.array(2.0))
-        y = square(x)
-        expected = np.array(4.0)
-        self.assertEqual(y.data, expected)
-
-    def test_backward(self):
-        x = Variable(np.array(3.0))
-        y = square(x)
-        y.backward()
-        expected = np.array(6.0)
-        self.assertEqual(x.grad, expected)
-
-unittest.main()
+if __name__ == '__main__':
+    # 示例用法
+    data = np.array(0.5)
+    x = Variable(data)
+    y = f(x)
+    y.backward()
+    print(f"x.grad = {x.grad}")
+    
+    # 数值微分验证
+    numerical_grad = numerical_diff(f, Variable(np.array(0.5)))
+    print(f"数值微分结果: {numerical_grad}")
+    print(f"解析微分结果: {x.grad}")
+    print(f"差异: {abs(numerical_grad - x.grad)}")
