@@ -56,10 +56,16 @@ def numerical_diff(f,x,eps=1e-4):
     y1 = f(x1)
     return (y1.data - y0.data) / (2*eps)
 
+def square(x):
+    return Square()(x)
+
+def exp(x):
+    return Exp()(x)
+
 def f(x):
-    A=Square()
-    B=Exp()
-    C=Square()
+    A=square()
+    B=exp()
+    C=square()
     return C(B(A(x)))
 A=Square()
 B=Exp()
