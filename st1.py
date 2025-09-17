@@ -63,16 +63,11 @@ def exp(x):
     return Exp()(x)
 
 def f(x):
-    
     return square(exp(square(x)))
 
 data = np.array(0.5)
 
 x = Variable(data)
-a=A(x)
-b=B(a)
-c=C(b)
+y=f(x)
 
-c.grad = np.array(1.0)
-c.backward()
-print(x.grad)
+print(y.grad)
