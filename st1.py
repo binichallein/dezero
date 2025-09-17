@@ -1,4 +1,6 @@
 import numpy as np
+import unittest
+
 class Variable:
     def __init__(self, data):
         if data is not None:
@@ -26,7 +28,7 @@ class Function:
     def __call__(self,input):
         x = input.data
         y = self.forward(x)
-        output = Variable(y)
+        output = Variable(as_array(y))
         output.set_creator(self)
         self.output = output
         self.input = input
@@ -70,6 +72,11 @@ def exp(x):
 def f(x):
     return square(exp(square(x)))
 
+def as_array(x):
+    if np.isscalar(x):
+        return np.array(x)
+    return x
+
 data = np.array(0.5)
 
 x = Variable(data)
@@ -78,3 +85,19 @@ y=f(x)
 y.backward()
 
 print(x.grad)
+
+class SquareTest(unittest.TestCase):
+    def test_forward(self):
+        x = Variable(np.array(2.0))
+        y = square(x)
+        expected = np.array(4.0)
+        self.assertEqual(y.data, expected)
+
+    def test_backward(self):
+        x = Variable(np.array(3.0))
+        y = square(x)
+        y.backward()
+        expected = np.array(6.0)
+        self.assertEqual(x.grad, expected)
+
+unittest.main()
