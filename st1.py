@@ -220,4 +220,4 @@ if __name__ == '__main__':
     # print(a.grad)
     # print(b.grad)
     # print(c.grad)
-    # print(y.grad)
+    print(y.grad)
