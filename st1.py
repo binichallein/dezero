@@ -1,5 +1,5 @@
 import numpy as np
-
+import weakref
 class Variable:
     def __init__(self, data):
         if data is not None:
@@ -17,7 +17,7 @@ class Variable:
     def cleargrad(self):
         self.grad = None
 
-    def backward(self):
+    def backward(self, retain_grads=False):
         if self.grad is None:
             self.grad = np.ones_like(self.data)
         funcs = []
@@ -35,7 +35,7 @@ class Variable:
             f= funcs.pop()
             # x,y = f.input,f.output
             # x.grad = f.backward(y.grad)
-            gys = [output.grad for output in f.outputs]
+            gys = [output().grad for output in f.outputs]
             gxs = f.backward(*gys)
             if not isinstance(gxs,tuple):
                 gxs = (gxs,)
@@ -48,6 +48,10 @@ class Variable:
                 if x.creator is not None:
                     add_func(x.creator)
 
+            if not retain_grads:
+                for y in f.outputs:
+                    y().grad=None
+
 class Function:
     def __call__(self,*inputs):
         xs = [x.data for x in inputs]
@@ -59,7 +63,7 @@ class Function:
         self.generation = max([x.generation for x in inputs])
         for output in outputs:
             output.set_creator(self)
-        self.outputs = outputs
+        self.outputs = [weakref.ref(output) for output in outputs]
         self.inputs = inputs
 
         return outputs if len(outputs) > 1 else outputs[0]
@@ -133,16 +137,10 @@ if __name__ == '__main__':
     # print(f"解析微分结果: {x.grad}")
     # print(f"差异: {abs(numerical_grad - x.grad)}")
     x0 = Variable(np.array(1.0))
-    # x1 = Variable(np.array(3))
-    x1 = exp(x0)
-    y=add(square(x1),square(x1))
-    y.backward()
-    print(y.data)
-    print(x0.grad)
+    x1 = Variable(np.array(1.0))
 
-    # x0.cleargrad()
-    # y = add(add(x0,x0),x0)
-    # y.backward()
-   
-    # print(x0.grad)
-    # print(x1.grad)
+    t=add(x0,x1)
+    y=add(x0,t)
+    y.backward()
+    print(("{},{}".format(x0.grad,x1.grad)))
+    print(("{},{}".format(t.grad,y.grad)))
