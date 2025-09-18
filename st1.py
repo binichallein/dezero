@@ -2,15 +2,44 @@ import numpy as np
 import weakref
 import contextlib
 
+
 class Variable:
-    def __init__(self, data):
+    def __init__(self, data,name=None):
         if data is not None:
             if not isinstance(data,np.ndarray):
                 raise TypeError('{} is not supported'.format(type(data)))
         self.data = data
+        self.name = name
         self.grad = None
         self.creator = None
         self.generation =0
+    
+
+    def __repr__(self):
+        if self.data is None:
+            return "Variable(None)"
+        p =str(self.data).replace('\n', '\n'+' '*9)
+        return 'Variable('+p+', dtype='+str(self.dtype)+')'
+
+    def __len__(self):
+        return len(self.data)
+
+    @property
+    def ndim(self):
+        return self.data.ndim
+
+    @property
+    def size(self):
+        return self.data.size
+    
+    @property
+    def shape(self):
+        return self.data.shape
+    
+    @property
+    def dtype(self):
+        return self.data.dtype
+    
     
     def set_creator(self, func):
         self.creator = func
@@ -166,7 +195,11 @@ if __name__ == '__main__':
     # print(("{},{}".format(t.grad,y.grad)))
 
     with no_grad():
-        x = Variable(np.array(10))
-        y = square(x)
+        x = Variable(np.array([[1,2,3],[4,5,6]]),name='hello')
         
-        print(y.data)
+        
+        print(x)
+        print(x.shape)
+        print(x.size)
+        print(len(x))
+        print(x.ndim)
