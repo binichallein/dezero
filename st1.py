@@ -189,35 +189,35 @@ Variable.__mul__ = mul
 Variable.__add__=add
 if __name__ == '__main__':
     # # 示例用法
-    # data = np.array(0.5)
-    # x = Variable(data)
-    # y = f(x)
-    # print(f"x.grad = {x.grad}")
-    # y.backward()
-    # print(f"x.grad = {x.grad}")
+    data = np.array(0.5)
+    x = Variable(data)
+    y = f(x)
+    print(f"x.grad = {x.grad}")
+    y.backward()
+    print(f"x.grad = {x.grad}")
     
-    # # 数值微分验证
-    # numerical_grad = numerical_diff(f, Variable(np.array(0.5)))
-    # print(f"数值微分结果: {numerical_grad}")
-    # print(f"解析微分结果: {x.grad}")
-    # print(f"差异: {abs(numerical_grad - x.grad)}")
-    # x0 = Variable(np.array(1.0))
-    # x1 = Variable(np.array(1.0))
+    # 数值微分验证
+    numerical_grad = numerical_diff(f, Variable(np.array(0.5)))
+    print(f"数值微分结果: {numerical_grad}")
+    print(f"解析微分结果: {x.grad}")
+    print(f"差异: {abs(numerical_grad - x.grad)}")
+    x0 = Variable(np.array(1.0))
+    x1 = Variable(np.array(1.0))
 
-    # t=add(x0,x1)
-    # y=add(x0,t)
-    # y.backward()
-    # print(("{},{}".format(x0.grad,x1.grad)))
-    # print(("{},{}".format(t.grad,y.grad)))
+    t=add(x0,x1)
+    y=add(x0,t)
+    y.backward()
+    print(("{},{}".format(x0.grad,x1.grad)))
+    print(("{},{}".format(t.grad,y.grad)))
 
 
-    a=Variable(np.array(3))
-    b=Variable(np.array(2))
-    c=Variable(np.array(1))
-    y=a*b+c
-    print(y)
-    y.backward(True)
-    print(a.grad)
-    print(b.grad)
-    print(c.grad)
-    print(y.grad)
+    # a=Variable(np.array(3))
+    # b=Variable(np.array(2))
+    # c=Variable(np.array(1))
+    # y=a*b+c
+    # print(y)
+    # y.backward(True)
+    # print(a.grad)
+    # print(b.grad)
+    # print(c.grad)
+    # print(y.grad)
