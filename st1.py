@@ -83,6 +83,8 @@ class Variable:
                 for y in f.outputs:
                     y().grad=None
 
+
+
 class Function:
     def __call__(self,*inputs):
         xs = [x.data for x in inputs]
@@ -139,6 +141,15 @@ class Exp(Function):
         x=self.inputs[0].data
         return np.exp(x)*gy
 
+class Mul(Function):
+    def forward(self,x0,x1):
+        y=x0*x1
+        return y
+    
+    def backward(self,gy):
+        x0,x1=self.inputs[0].data, self.inputs[1].data
+        return gy*x1, gy*x0
+
 def numerical_diff(f,x,eps=1e-4):
     x0 = Variable(as_array(x.data - eps))
     x1 = Variable(as_array(x.data + eps))
@@ -148,6 +159,9 @@ def numerical_diff(f,x,eps=1e-4):
 
 def square(x):
     return Square()(x)
+
+def mul(x0,x1):
+    return Mul()(x0,x1)
 
 def exp(x):
     return Exp()(x)
@@ -171,6 +185,8 @@ class Add(Function):
     def backward(self,gy):
         return gy,gy
 
+Variable.__mul__ = mul
+Variable.__add__=add
 if __name__ == '__main__':
     # # 示例用法
     # data = np.array(0.5)
@@ -194,12 +210,14 @@ if __name__ == '__main__':
     # print(("{},{}".format(x0.grad,x1.grad)))
     # print(("{},{}".format(t.grad,y.grad)))
 
-    with no_grad():
-        x = Variable(np.array([[1,2,3],[4,5,6]]),name='hello')
-        
-        
-        print(x)
-        print(x.shape)
-        print(x.size)
-        print(len(x))
-        print(x.ndim)
+
+    a=Variable(np.array(3))
+    b=Variable(np.array(2))
+    c=Variable(np.array(1))
+    y=a*b+c
+    print(y)
+    y.backward(True)
+    print(a.grad)
+    print(b.grad)
+    print(c.grad)
+    print(y.grad)
