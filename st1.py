@@ -8,30 +8,61 @@ class Variable:
         self.data = data
         self.grad = None
         self.creator = None
+        self.generation =0
     
     def set_creator(self, func):
         self.creator = func
+        self.generation = func.generation + 1
+    
+    def cleargrad(self):
+        self.grad = None
 
     def backward(self):
         if self.grad is None:
             self.grad = np.ones_like(self.data)
-        funcs = [self.creator]
+        funcs = []
+        seen_set = set()
+
+        def add_func(f):
+            if f not in seen_set:
+                seen_set.add(f)
+                funcs.append(f)
+                funcs.sort(key= lambda x: x.generation)
+            
+        add_func(self.creator)
+
         while funcs:
             f= funcs.pop()
-            x,y = f.input,f.output
-            x.grad = f.backward(y.grad)
-            if x.creator is not None:
-                funcs.append(x.creator)
+            # x,y = f.input,f.output
+            # x.grad = f.backward(y.grad)
+            gys = [output.grad for output in f.outputs]
+            gxs = f.backward(*gys)
+            if not isinstance(gxs,tuple):
+                gxs = (gxs,)
+
+            for x, gx in zip(f.inputs,gxs):
+                if x.grad is None:
+                    x.grad = gx
+                else:
+                    x.grad = x.grad + gx
+                if x.creator is not None:
+                    add_func(x.creator)
 
 class Function:
-    def __call__(self,input):
-        x = input.data
-        y = self.forward(x)
-        output = Variable(as_array(y))
-        output.set_creator(self)
-        self.output = output
-        self.input = input
-        return output
+    def __call__(self,*inputs):
+        xs = [x.data for x in inputs]
+        ys = self.forward(*xs) 
+        if not isinstance(ys,tuple):
+            ys = (ys,)
+        outputs = [Variable(as_array(y)) for y in ys]
+
+        self.generation = max([x.generation for x in inputs])
+        for output in outputs:
+            output.set_creator(self)
+        self.outputs = outputs
+        self.inputs = inputs
+
+        return outputs if len(outputs) > 1 else outputs[0]
     
     def forward(self,x):
         raise NotImplementedError()
@@ -44,7 +75,7 @@ class Square(Function):
         return x**2
     
     def backward(self,gy):
-        x= self.input.data
+        x= self.inputs[0].data
         return 2*x*gy
 
 class Exp(Function):
@@ -52,7 +83,7 @@ class Exp(Function):
         return np.exp(x)
     
     def backward(self,gy):
-        x=self.input.data
+        x=self.inputs[0].data
         return np.exp(x)*gy
 
 def numerical_diff(f,x,eps=1e-4):
@@ -68,6 +99,9 @@ def square(x):
 def exp(x):
     return Exp()(x)
 
+def add(x0,x1):
+    return Add()(x0,x1)
+
 def f(x):
     return square(exp(square(x)))
 
@@ -76,16 +110,39 @@ def as_array(x):
         return np.array(x)
     return x
 
+class Add(Function):
+    def forward(self,x0,x1):
+        y=x0+x1
+        return y
+
+    def backward(self,gy):
+        return gy,gy
+
 if __name__ == '__main__':
-    # 示例用法
-    data = np.array(0.5)
-    x = Variable(data)
-    y = f(x)
-    y.backward()
-    print(f"x.grad = {x.grad}")
+    # # 示例用法
+    # data = np.array(0.5)
+    # x = Variable(data)
+    # y = f(x)
+    # print(f"x.grad = {x.grad}")
+    # y.backward()
+    # print(f"x.grad = {x.grad}")
     
-    # 数值微分验证
-    numerical_grad = numerical_diff(f, Variable(np.array(0.5)))
-    print(f"数值微分结果: {numerical_grad}")
-    print(f"解析微分结果: {x.grad}")
-    print(f"差异: {abs(numerical_grad - x.grad)}")
+    # # 数值微分验证
+    # numerical_grad = numerical_diff(f, Variable(np.array(0.5)))
+    # print(f"数值微分结果: {numerical_grad}")
+    # print(f"解析微分结果: {x.grad}")
+    # print(f"差异: {abs(numerical_grad - x.grad)}")
+    x0 = Variable(np.array(1.0))
+    # x1 = Variable(np.array(3))
+    x1 = exp(x0)
+    y=add(square(x1),square(x1))
+    y.backward()
+    print(y.data)
+    print(x0.grad)
+
+    # x0.cleargrad()
+    # y = add(add(x0,x0),x0)
+    # y.backward()
+   
+    # print(x0.grad)
+    # print(x1.grad)
