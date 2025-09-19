@@ -4,6 +4,8 @@ import contextlib
 
 
 class Variable:
+    __array_priority__ = 200
+
     def __init__(self, data,name=None):
         if data is not None:
             if not isinstance(data,np.ndarray):
@@ -84,9 +86,14 @@ class Variable:
                     y().grad=None
 
 
+def as_variable(obj):
+    if isinstance(obj,Variable):
+        return obj
+    return Variable(obj)
 
 class Function:
     def __call__(self,*inputs):
+        inputs = [as_variable(x) for x in inputs]
         xs = [x.data for x in inputs]
         ys = self.forward(*xs) 
         if not isinstance(ys,tuple):
@@ -161,12 +168,14 @@ def square(x):
     return Square()(x)
 
 def mul(x0,x1):
+    x1 = as_array(x1)
     return Mul()(x0,x1)
 
 def exp(x):
     return Exp()(x)
 
 def add(x0,x1):
+    x1 = as_array(x1)
     return Add()(x0,x1)
 
 def f(x):
@@ -186,7 +195,10 @@ class Add(Function):
         return gy,gy
 
 Variable.__mul__ = mul
+Variable.__rmul__ = mul
 Variable.__add__=add
+Variable.__radd__ = add
+
 if __name__ == '__main__':
     # # 示例用法
     data = np.array(0.5)
@@ -211,7 +223,7 @@ if __name__ == '__main__':
     print(("{},{}".format(t.grad,y.grad)))
 
 
-    # a=Variable(np.array(3))
+    a=Variable(np.array(2))
     # b=Variable(np.array(2))
     # c=Variable(np.array(1))
     # y=a*b+c
@@ -220,4 +232,5 @@ if __name__ == '__main__':
     # print(a.grad)
     # print(b.grad)
     # print(c.grad)
-    print(y.grad)
+    y = np.array(1.0)+a
+    print(y)
