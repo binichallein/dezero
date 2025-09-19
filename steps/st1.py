@@ -31,8 +31,24 @@ def rosenbrock(x0,x1):
     y=100*(x1-x0**2)**2+(x0-1)**2
     return y
 
-x0= Variable(np.array(0.0))
-x1= Variable(np.array(2.0))
+def f(x):
+    y= x**4-2*x**2
+    return y
+
+def gx2(x):
+    return 12*x**2-4
+
+x= Variable(np.array(2.0))
+
+iters=10
+
+for i in range(iters):
+    print(i,x)
+    x.cleargrad()
+    y=f(x)
+    y.backward()
+    x.data -= x.grad/gx2(x.data)
+    
 # # z=sphere(x,y)
 
 # # z=matyas(x,y)
@@ -40,20 +56,21 @@ x1= Variable(np.array(2.0))
 # z.name='z'
 # z.backward()
 # plot_dot_graph(z,verbose=False,to_file='goldstein.png')
-lr=0.00005
-i=0
-while True:
-    i+=1
-    x0.cleargrad()
-    x1.cleargrad()
-    y= rosenbrock(x0,x1)
-    y.backward()
-    x0.data -= lr*x0.grad
-    x1.data -= lr*x1.grad
-    # 检查梯度是否足够小（数值精度问题）
-    if abs(x0.grad) < 1e-10 and abs(x1.grad) < 1e-10:
-        print(f"收敛到: x0={x0.data}, x1={x1.data}, 梯度: x0.grad={x0.grad}, x1.grad={x1.grad}")
-        break
-    if i%10000==0:
-        print(f"第{i}次迭代: x0={x0.data}, x1={x1.data}, 梯度: x0.grad={x0.grad}, x1.grad={x1.grad}")
+
+# lr=0.00005
+# i=0
+# while True:
+#     i+=1
+#     x0.cleargrad()
+#     x1.cleargrad()
+#     y= rosenbrock(x0,x1)
+#     y.backward()
+#     x0.data -= lr*x0.grad
+#     x1.data -= lr*x1.grad
+#     # 检查梯度是否足够小（数值精度问题）
+#     if abs(x0.grad) < 1e-10 and abs(x1.grad) < 1e-10:
+#         print(f"收敛到: x0={x0.data}, x1={x1.data}, 梯度: x0.grad={x0.grad}, x1.grad={x1.grad}")
+#         break
+#     if i%10000==0:
+#         print(f"第{i}次迭代: x0={x0.data}, x1={x1.data}, 梯度: x0.grad={x0.grad}, x1.grad={x1.grad}")
     
