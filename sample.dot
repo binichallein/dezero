@@ -1,0 +1,5 @@
+digraph g{
+x[label="x",color="red",style="filled"]
+y[label="y",color="blue",style="filled"]
+
+}
