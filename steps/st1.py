@@ -6,6 +6,7 @@ from tabnanny import verbose
 import numpy as np
 from dezero import Variable
 from dezero.utils import plot_dot_graph
+import math
 
 def sphere(x,y):
     return x**2+y**2
@@ -16,12 +17,43 @@ def matyas(x,y):
 def goldstein(x,y):
     return (1+(x+y+1)**2*(19-14*x+3*x**2-14*y+6*x*y+3*y**2))*(30+(2*x-3*y)**2*(18-32*x+12*x**2+48*y-36*x*y+27*y**2))
 
-x= Variable(np.array(1.0),name='x')
-y= Variable(np.array(1.0),name='y')
-# z=sphere(x,y)
+def my_sin(x,thershold=0.0001):
+    y=0
+    for i in range(100000):
+        c=(-1)**i/math.factorial(2*i+1)
+        t=c*x**(2*i+1)
+        y+=t
+        if abs(t.data)<thershold:
+            break
+    return y
 
-# z=matyas(x,y)
-z=goldstein(x,y)
-z.name='z'
-z.backward()
-plot_dot_graph(z,verbose=False,to_file='goldstein.png')
+def rosenbrock(x0,x1):
+    y=100*(x1-x0**2)**2+(x0-1)**2
+    return y
+
+x0= Variable(np.array(0.0))
+x1= Variable(np.array(2.0))
+# # z=sphere(x,y)
+
+# # z=matyas(x,y)
+# z=goldstein(x,y)
+# z.name='z'
+# z.backward()
+# plot_dot_graph(z,verbose=False,to_file='goldstein.png')
+lr=0.00005
+i=0
+while True:
+    i+=1
+    x0.cleargrad()
+    x1.cleargrad()
+    y= rosenbrock(x0,x1)
+    y.backward()
+    x0.data -= lr*x0.grad
+    x1.data -= lr*x1.grad
+    # 检查梯度是否足够小（数值精度问题）
+    if abs(x0.grad) < 1e-10 and abs(x1.grad) < 1e-10:
+        print(f"收敛到: x0={x0.data}, x1={x1.data}, 梯度: x0.grad={x0.grad}, x1.grad={x1.grad}")
+        break
+    if i%10000==0:
+        print(f"第{i}次迭代: x0={x0.data}, x1={x1.data}, 梯度: x0.grad={x0.grad}, x1.grad={x1.grad}")
+    
