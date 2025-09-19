@@ -1,4 +1,3 @@
-from turtle import forward
 import numpy as np
 import weakref
 import contextlib
@@ -133,22 +132,6 @@ def using_config(name,value):
 def no_grad():
     return using_config('enable_backprop',False)
 
-class Square(Function):
-    def forward(self, x):
-        return x**2
-    
-    def backward(self,gy):
-        x= self.inputs[0].data
-        return 2*x*gy
-
-class Exp(Function):
-    def forward(self, x):
-        return np.exp(x)
-    
-    def backward(self,gy):
-        x=self.inputs[0].data
-        return np.exp(x)*gy
-
 class Mul(Function):
     def forward(self,x0,x1):
         y=x0*x1
@@ -165,15 +148,10 @@ def numerical_diff(f,x,eps=1e-4):
     y1 = f(x1)
     return (y1.data - y0.data) / (2*eps)
 
-def square(x):
-    return Square()(x)
 
 def mul(x0,x1):
     x1 = as_array(x1)
     return Mul()(x0,x1)
-
-def exp(x):
-    return Exp()(x)
 
 def add(x0,x1):
     x1 = as_array(x1)
@@ -200,9 +178,6 @@ def rdiv(x0,x1):
 
 def pow(x,c):
     return Pow(c)(x)
-
-def f(x):
-    return square(exp(square(x)))
 
 def as_array(x):
     if np.isscalar(x):
@@ -253,52 +228,14 @@ class Pow(Function):
         x= self.inputs[0].data
         return self.c*x**(self.c-1)*gy
 
-Variable.__mul__ = mul
-Variable.__rmul__ = mul
-Variable.__add__=add
-Variable.__radd__ = add
-Variable.__neg__ = neg
-Variable.__sub__ = sub
-Variable.__rsub__ = rsub
-Variable.__rtruediv__ = rdiv
-Variable.__truediv__ = div
-Variable.__pow__ = pow
-
-if __name__ == '__main__':
-    # # 示例用法
-    data = np.array(0.5)
-    x = Variable(data)
-    y = f(x)
-    print(f"x.grad = {x.grad}")
-    y.backward()
-    print(f"x.grad = {x.grad}")
-    
-    # 数值微分验证
-    numerical_grad = numerical_diff(f, Variable(np.array(0.5)))
-    print(f"数值微分结果: {numerical_grad}")
-    print(f"解析微分结果: {x.grad}")
-    print(f"差异: {abs(numerical_grad - x.grad)}")
-    x0 = Variable(np.array(1.0))
-    x1 = Variable(np.array(1.0))
-
-    t=add(x0,x1)
-    y=add(x0,t)
-    y.backward()
-    print(("{},{}".format(x0.grad,x1.grad)))
-    print(("{},{}".format(t.grad,y.grad)))
-
-
-    a=Variable(np.array(3))
-    # b=Variable(np.array(2))
-    # c=Variable(np.array(1))
-    # y=a*b+c
-    # print(y)
-    # y.backward(True)
-    # print(a.grad)
-    # print(b.grad)
-    # print(c.grad)
-    y = 2-a
-    x = a-1
-    print(y)
-    print(x/3)
-    print(-x)
+def setup_variable():
+    Variable.__mul__ = mul
+    Variable.__rmul__ = mul
+    Variable.__add__=add
+    Variable.__radd__ = add
+    Variable.__neg__ = neg
+    Variable.__sub__ = sub
+    Variable.__rsub__ = rsub
+    Variable.__rtruediv__ = rdiv
+    Variable.__truediv__ = div
+    Variable.__pow__ = pow
