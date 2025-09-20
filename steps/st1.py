@@ -112,7 +112,7 @@ def te(x):
 
 x = Variable(np.array([[1,2,3],[4,5,6]]))
 
-a = Variable(np.random.randn(1,2,3))
+a = Variable(np.array([10]))
 # print(a)
 # y=a.reshape(2,3)
 # print(y)
@@ -120,8 +120,11 @@ a = Variable(np.random.randn(1,2,3))
 # print(y)
 # y=a.reshape([2,3])
 # print(y)
-print(x.T)
-print(x.transpose())
+print(x+a)
+y=x+a
+y.backward()
+print(x.grad)
+print(a.grad)
 
 # y=F.reshape(x,(6,))
 # y.backward()

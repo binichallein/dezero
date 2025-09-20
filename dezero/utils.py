@@ -1,6 +1,25 @@
 import os
 import subprocess
 
+def sum_to(x, shape):
+    """Sum array elements along axes to match target shape"""
+    ndim = len(shape)
+    tupled_shape = tuple([1] * (x.ndim - ndim) + list(shape))
+
+    y = x
+    # Sum over extra dimensions
+    for i in range(x.ndim - ndim):
+        y = y.sum(axis=0)
+
+    # Sum over dimensions that need to be reduced
+    for i, (sx, st) in enumerate(zip(y.shape, tupled_shape)):
+        if sx != st and st == 1:
+            y = y.sum(axis=i, keepdims=True)
+        elif sx != st:
+            raise ValueError(f"Cannot sum from shape {x.shape} to {shape}")
+
+    return y.reshape(shape)
+
 def _dot_var(v,verbose=False):
     dot_var = '{}[label="{}",color=orange,style=filled]\n'
 
