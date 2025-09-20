@@ -1,6 +1,7 @@
 from turtle import forward
 import numpy as np
 from dezero.core import Function
+from dezero.core import as_variable
 
 def step_function(x):
     y = x > 0
@@ -42,6 +43,25 @@ class Tanh(Function):
         y=self.outputs[0]()
         gx=gy*(1-y**2)
         return gx
+
+class Reshape(Function):
+    def __init__(self,shape):
+        self.shape = shape
+
+    def forward(self,x):
+        self.x_shape = x.shape
+        y=x.reshape(self.shape)
+        return y
+
+    def backward(self,gy):
+        return reshape(gy,self.x_shape)
+        
+
+def reshape(x,shape):
+    if x.shape == shape:
+        return as_variable(x)
+    else:
+        return Reshape(shape)(x)
 
 def tanh(x):
     return Tanh()(x)

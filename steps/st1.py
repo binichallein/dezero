@@ -39,7 +39,6 @@ def f(x):
 def gx2(x):
     return 12*x**2-4
 
-x= Variable(np.array(1.0))
 
 def te(x):
     return x**2
@@ -94,19 +93,35 @@ def te(x):
 #         print(f"第{i}次迭代: x0={x0.data}, x1={x1.data}, 梯度: x0.grad={x0.grad}, x1.grad={x1.grad}")
     
 
-y = F.tanh(x)
-x.name='x'
-y.name = 'y'
-y.backward(create_graph=True)
+# y = F.tanh(x)
+# x.name='x'
+# y.name = 'y'
+# y.backward(create_graph=True)
 
-iters = 5
+# iters = 5
 
-for i in range(iters):
-    gx = x.grad
-    x.cleargrad()
-    gx.backward(create_graph=True)
+# for i in range(iters):
+#     gx = x.grad
+#     x.cleargrad()
+#     gx.backward(create_graph=True)
   
 
-gx = x.grad
-gx.name = 'gx' + str(iters+1)
-plot_dot_graph(gx,verbose=False,to_file='tanh6.png')
+# gx = x.grad
+# gx.name = 'gx' + str(iters+1)
+# plot_dot_graph(gx,verbose=False,to_file='tanh6.png')
+
+x = Variable(np.array([[1,2,3],[4,5,6]]))
+
+a = Variable(np.random.randn(1,2,3))
+print(a)
+y=a.reshape(2,3)
+print(y)
+y=a.reshape((2,3))
+print(y)
+y=a.reshape([2,3])
+print(y)
+
+# y=F.reshape(x,(6,))
+# y.backward()
+
+# print(x.grad)
