@@ -7,6 +7,7 @@ import numpy as np
 from dezero import Variable
 from dezero.utils import plot_dot_graph
 import math
+import dezero.functions as F
 
 def sphere(x,y):
     return x**2+y**2
@@ -38,7 +39,7 @@ def f(x):
 def gx2(x):
     return 12*x**2-4
 
-x= Variable(np.array(2.0))
+x= Variable(np.array(1.0))
 
 def te(x):
     return x**2
@@ -54,18 +55,18 @@ def te(x):
 # print(gx)
 
 # 牛顿法
-iters=10
+# iters=10
 
-for i in range(iters):
-    print(i,x)
-    x.cleargrad()
-    y=f(x)
-    y.backward(create_graph=True)
-    gx = x.grad
-    x.cleargrad()
-    gx.backward()
-    gx2 = x.grad
-    x.data -= gx.data/gx2.data
+# for i in range(iters):
+#     print(i,x)
+#     x.cleargrad()
+#     y=f(x)
+#     y.backward(create_graph=True)
+#     gx = x.grad
+#     x.cleargrad()
+#     gx.backward()
+#     gx2 = x.grad
+#     x.data -= gx.data/gx2.data
     
 # # z=sphere(x,y)
 
@@ -92,3 +93,20 @@ for i in range(iters):
 #     if i%10000==0:
 #         print(f"第{i}次迭代: x0={x0.data}, x1={x1.data}, 梯度: x0.grad={x0.grad}, x1.grad={x1.grad}")
     
+
+y = F.tanh(x)
+x.name='x'
+y.name = 'y'
+y.backward(create_graph=True)
+
+iters = 5
+
+for i in range(iters):
+    gx = x.grad
+    x.cleargrad()
+    gx.backward(create_graph=True)
+  
+
+gx = x.grad
+gx.name = 'gx' + str(iters+1)
+plot_dot_graph(gx,verbose=False,to_file='tanh6.png')
