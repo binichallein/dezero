@@ -17,6 +17,13 @@ class Variable:
         self.grad = None
         self.creator = None
         self.generation =0
+
+    @property
+    def T(self):
+        return dezero.functions.transpose(self)
+
+    def transpose(self):
+        return dezero.functions.transpose(self)
     
     def reshape(self,*shape):
         if len(shape)==1 and isinstance(shape[0], (tuple,list)):

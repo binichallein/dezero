@@ -55,7 +55,19 @@ class Reshape(Function):
 
     def backward(self,gy):
         return reshape(gy,self.x_shape)
-        
+
+class Transpose(Function):
+
+    def forward(self,x):
+        y=np.transpose(x)
+        return y
+    
+    def backward(self,gy):
+        gx = transpose(gy)
+        return gx
+
+def transpose(x):
+    return Transpose()(x)
 
 def reshape(x,shape):
     if x.shape == shape:
