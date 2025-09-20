@@ -52,7 +52,7 @@ class Variable:
 
     def backward(self, retain_grads=False,create_graph=False):
         if self.grad is None:
-            self.grad = np.ones_like(self.data)
+            self.grad = Variable(np.ones_like(self.data))
         funcs = []
         seen_set = set()
 
@@ -69,28 +69,24 @@ class Variable:
             # x,y = f.input,f.output
             # x.grad = f.backward(y.grad)
             gys = [output().grad for output in f.outputs]
-            
-            gxs = f.backward(*gys)
-            if not isinstance(gxs,tuple):
-                gxs = (gxs,)
 
-            for x, gx in zip(f.inputs,gxs):
-                if x.grad is None:
-                    x.grad = gx
-                else:
-                    x.grad = x.grad + gx
-                if x.creator is not None:
-                    add_func(x.creator)
+            with using_config('enable_backprop',create_graph):
+                gxs = f.backward(*gys)
+                if not isinstance(gxs,tuple):
+                    gxs = (gxs,)
 
-            if not retain_grads:
-                for y in f.outputs:
-                    y().grad=None
+                for x, gx in zip(f.inputs,gxs):
+                    if x.grad is None:
+                        x.grad = gx
+                    else:
+                        x.grad = x.grad + gx
+                    if x.creator is not None:
+                        add_func(x.creator)
 
+                if not retain_grads:
+                    for y in f.outputs:
+                        y().grad=None
 
-def as_variable(obj):
-    if isinstance(obj,Variable):
-        return obj
-    return Variable(obj)
 
 class Function:
     def __call__(self,*inputs):
@@ -185,6 +181,11 @@ def as_array(x):
         return np.array(x)
     return x
 
+def as_variable(obj):
+    if isinstance(obj,Variable):
+        return obj
+    return Variable(obj)
+
 class Add(Function):
     def forward(self,x0,x1):
         y=x0+x1
@@ -226,7 +227,7 @@ class Pow(Function):
         return x**self.c
 
     def backward(self, gy):
-        x= self.inputs
+        x, = self.inputs
         return self.c*x**(self.c-1)*gy
 
 def setup_variable():
