@@ -196,3 +196,28 @@ def linear(x, W, b=None):
         return Linear()(x, W)
     else:
         return Linear()(x, W, b)
+
+class Sigmoid(Function):
+    def forward(self, x):
+        y = 1 / (1 + np.exp(-x))
+        return y
+
+    def backward(self, gy):
+        y = self.outputs[0]()  # sigmoid的输出
+        gx = gy * y * (1 - y)  # sigmoid的导数：sigmoid(x) * (1 - sigmoid(x))
+        return gx
+
+def sigmoid(x):
+    return Sigmoid()(x)
+
+class Exp(Function):
+    def forward(self, x):
+        return np.exp(x)
+
+    def backward(self, gy):
+        y = self.outputs[0]()  # exp的输出
+        gx = gy * y  # exp的导数就是它自己
+        return gx
+
+def exp(x):
+    return Exp()(x)
