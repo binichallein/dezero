@@ -122,6 +122,24 @@ class MatMul(Function):
         gW = matmul(x.T,gy)
         return gx,gW
 
+class MeanSquaredError(Function):
+    def forward(self,x0,x1):
+        diff = x0-x1
+        self.diff_shape = diff.shape
+        return (diff**2).sum()/diff.shape[0]
+
+    def backward(self,gy):
+        x0,x1 = self.inputs
+        diff = x0-x1
+        n = self.diff_shape[0]
+        gx0 = gy*diff*(2./n)
+        gx1=-gx0
+        return gx0,gx1
+
+def mean_squared_error(x0,x1):
+    return MeanSquaredError()(x0,x1)
+
+
 def matmul(x,W):
     return MatMul()(x,W)
 

@@ -57,8 +57,23 @@ class Variable:
     @property
     def dtype(self):
         return self.data.dtype
-    
-    
+
+    def __truediv__(self, other):
+        return div(self, other)
+
+    def __sub__(self, other):
+        return sub(self, other)
+
+    def __add__(self, other):
+        return add(self, other)
+
+    def __mul__(self, other):
+        return mul(self, other)
+
+    def __pow__(self, other):
+        return pow(self, other)
+
+
     def set_creator(self, func):
         self.creator = func
         self.generation = func.generation + 1
@@ -172,7 +187,6 @@ def mul(x0,x1):
     return Mul()(x0,x1)
 
 def add(x0,x1):
-    x1 = as_array(x1)
     return Add()(x0,x1)
 
 def neg(x):
@@ -187,7 +201,7 @@ def rsub(x0,x1):
     return Sub()(x1,x0)
 
 def div(x0,x1):
-    x1 = as_array(x1)
+    x1 = as_variable(x1)
     return Div()(x0,x1)
 
 def rdiv(x0,x1):
@@ -200,12 +214,14 @@ def pow(x,c):
 def as_array(x):
     if np.isscalar(x):
         return np.array(x)
+    elif isinstance(x, Variable):
+        return x.data
     return x
 
 def as_variable(obj):
     if isinstance(obj,Variable):
         return obj
-    return Variable(obj)
+    return Variable(as_array(obj))
 
 class Add(Function):
     def forward(self,x0,x1):
@@ -216,9 +232,10 @@ class Add(Function):
     def backward(self,gy):
         gx0,gx1 = gy,gy
         if self.x0_shape != self.x1_shape:
-            gx0 = dezero.functions.sum_to(gx0,self.x0_shape)
-            gx1 = dezero.functions.sum_to(gx1,self.x1_shape)
-        return gx0,gx1
+            from dezero import functions
+            gx0 = functions.sum_to(gx0, self.x0_shape)
+            gx1 = functions.sum_to(gx1, self.x1_shape)
+        return gx0, gx1
 
 class Neg(Function):
     def forward(self,x):
@@ -237,9 +254,10 @@ class Sub(Function):
     def backward(self,gy):
         gx0,gx1 = gy,-gy
         if self.x0_shape != self.x1_shape:
-            gx0 = dezero.functions.sum_to(gx0,self.x0_shape)
-            gx1 = dezero.functions.sum_to(gx1,self.x1_shape)
-        return gx0,gx1
+            from dezero import functions
+            gx0 = functions.sum_to(gx0, self.x0_shape)
+            gx1 = functions.sum_to(gx1, self.x1_shape)
+        return gx0, gx1
 
 class Div(Function):
     def forward(self,x0,x1):
@@ -251,9 +269,10 @@ class Div(Function):
         x0,x1=self.inputs
         gx0,gx1 = gy/x1,-gy*x0/(x1**2)
         if self.x0_shape != self.x1_shape:
-            gx0 = dezero.functions.sum_to(gx0,self.x0_shape)
-            gx1 = dezero.functions.sum_to(gx1,self.x1_shape)
-        return gy/x1,-gy*x0/(x1**2)
+            from dezero import functions
+            gx0 = functions.sum_to(gx0, self.x0_shape)
+            gx1 = functions.sum_to(gx1, self.x1_shape)
+        return gx0, gx1
 
 class Pow(Function):
     def __init__(self,c) -> None:

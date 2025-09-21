@@ -20,6 +20,26 @@ def sum_to(x, shape):
 
     return y.reshape(shape)
 
+def reshape_sum_backward(gy, x_shape, axis, keepdims):
+    """Reshape gradient for sum backward pass"""
+    ndim = len(x_shape)
+    tupled_axis = axis
+    if not keepdims and tupled_axis is not None:
+        if not isinstance(tupled_axis, tuple):
+            tupled_axis = (tupled_axis,)
+
+        shape = list(gy.shape)
+        for a in sorted(tupled_axis):
+            if a < 0:
+                a = ndim + a
+            shape.insert(a, 1)
+        gy = gy.reshape(tuple(shape))
+    elif axis is None and not keepdims:
+        # If axis=None and keepdims=False, sum over all dims
+        gy = gy.reshape((1,) * ndim)
+
+    return gy
+
 def _dot_var(v,verbose=False):
     dot_var = '{}[label="{}",color=orange,style=filled]\n'
 
