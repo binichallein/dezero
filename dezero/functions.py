@@ -168,3 +168,31 @@ def sin(x):
 
 def cos(x):
     return Cos()(x)
+
+class Linear(Function):
+    def forward(self, x, W, b=None):
+        y = x.dot(W)
+        if b is not None:
+            y += b
+        return y
+
+    def backward(self, gy):
+        x, W = self.inputs[:2]
+
+        gx = matmul(gy, W.T)
+        gW = matmul(x.T, gy)
+
+        if len(self.inputs) == 3:  # 有偏置
+            b = self.inputs[2]
+            # 对于偏置，需要沿着 batch 维度求和
+            gb = sum(gy, axis=0)
+            gb = sum_to(gb, b.shape)
+            return gx, gW, gb
+        else:  # 没有偏置
+            return gx, gW
+
+def linear(x, W, b=None):
+    if b is None:
+        return Linear()(x, W)
+    else:
+        return Linear()(x, W, b)

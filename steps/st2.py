@@ -22,12 +22,12 @@ b=Variable(np.zeros((1,1)))
 print(f"W type: {type(W)}, b type: {type(b)}")
 
 def predict(x):
-    y=F.matmul(x,W)+b
-    return y
+    
+    return F.linear(x,W,b)
 
 
 lr=0.1
-iters = 100
+iters = 200
 
 for i in range(iters):
     W.cleargrad()
